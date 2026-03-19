@@ -1,4 +1,5 @@
-from openai import OpenAI
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import PromptTemplate 
 from dotenv import load_dotenv
 import os
 
@@ -9,22 +10,24 @@ numero_dias = 7
 numero_criancas = 2
 atividade = "musica"
 
-prompt = f"Crie um roteiro de viagme de {numero_dias} para uma familia com {numero_criancas} criancas, que gosta de {atividade}"
-
-cliente = OpenAI(api_key=api_key)
-
-resposta = cliente.chat.completions.create(
-  model="gpt-3.5-turbo",
-  messages=[
-  {
-   "role": "system",
-   "content": "Voce e um assistente de roteiro de viagem"
-  },
-  {
-    "role": "user",
-    "content": prompt
-  }
-  ]
+modelo_de_prompt = PromptTemplate(
+  template="""
+  Crie um roteiro de viagens para um periodo de {dias} para uma familia com {numero_criancas} criancas e a atividade {atividade}
+  """
 )
 
-print(resposta.choices[0].message.content)
+prompt = modelo_de_prompt.format(
+  dias=numero_dias, 
+  numero_criancas=numero_criancas,
+  atividade=atividade
+)
+
+modelo = ChatOpenAI(
+  model="gpt-3.5-turbo",
+  temperature=0.5,
+  api_key=api_key
+)
+
+resposta = modelo.invoke(prompt)
+
+print(resposta)
